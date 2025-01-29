@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import { useContext, useState } from "react";
 import { View, TextInput, StyleSheet, Button, Alert } from "react-native";
 import axios, { AxiosError } from "axios";
+import { router } from "expo-router";
+import { useSession } from "./SessionAuth";
 
 type SIProps = {
     server: string;
@@ -9,6 +11,7 @@ type SIProps = {
 export default function SignInForm({ server }: SIProps) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const { session, setSession } = useSession();
 
     const handleSignIn = async () => {
         if (!email || !password) {
@@ -16,16 +19,14 @@ export default function SignInForm({ server }: SIProps) {
             return;
         }
 
-        // check if password is suitable
-        // check if email already in use
-
         try {
             const response = await axios.post(server, {
                 email: email,
                 password: password
             });
 
-            alert(response.data.session_id)
+            await setSession(response.data.session_id);
+            router.replace('/');
         }
         catch (error) {
             error instanceof AxiosError ? alert(`Error: ${error.response?.data.message}`) : alert(`Error: ${error}`);
